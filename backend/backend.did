@@ -1,0 +1,26 @@
+type Result = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Restaurant = 
+ record {
+   cuisine: text;
+   id: nat;
+   location: text;
+   name: text;
+ };
+type Reservation = 
+ record {
+   date: text;
+   guests: nat;
+   id: nat;
+   restaurantId: nat;
+   time: text;
+ };
+service : {
+  checkAvailability: (nat, text, text) -> (bool) query;
+  getReservations: () -> (vec Reservation) query;
+  getRestaurants: () -> (vec Restaurant) query;
+  makeReservation: (nat, text, text, nat) -> (Result);
+}
