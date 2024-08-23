@@ -23,6 +23,8 @@ actor {
     date: Text;
     time: Text;
     guests: Nat;
+    status: Text;
+    specialRequests: ?Text;
   };
 
   stable var nextRestaurantId: Nat = 0;
@@ -51,7 +53,7 @@ actor {
     return Array.map<(Nat, Restaurant), Restaurant>(Iter.toArray(restaurants.entries()), func((_, r)) = r);
   };
 
-  public shared func makeReservation(restaurantId: Nat, date: Text, time: Text, guests: Nat) : async Result.Result<Nat, Text> {
+  public shared func makeReservation(restaurantId: Nat, date: Text, time: Text, guests: Nat, specialRequests: ?Text) : async Result.Result<Nat, Text> {
     switch (restaurants.get(restaurantId)) {
       case (null) {
         return #err("Restaurant not found");
@@ -64,6 +66,8 @@ actor {
           date = date;
           time = time;
           guests = guests;
+          status = "Confirmed";
+          specialRequests = specialRequests;
         };
         reservations.put(reservationId, reservation);
         nextReservationId += 1;
@@ -76,12 +80,58 @@ actor {
     return Array.map<(Nat, Reservation), Reservation>(Iter.toArray(reservations.entries()), func((_, r)) = r);
   };
 
+  public shared func updateReservation(reservationId: Nat, date: Text, time: Text, guests: Nat, specialRequests: ?Text) : async Result.Result<(), Text> {
+    switch (reservations.get(reservationId)) {
+      case (null) {
+        return #err("Reservation not found");
+      };
+      case (?reservation) {
+        let updatedReservation: Reservation = {
+          id = reservation.id;
+          restaurantId = reservation.restaurantId;
+          date = date;
+          time = time;
+          guests = guests;
+          status = reservation.status;
+          specialRequests = specialRequests;
+        };
+        reservations.put(reservationId, updatedReservation);
+        return #ok();
+      };
+    };
+  };
+
+  public shared func cancelReservation(reservationId: Nat) : async Result.Result<(), Text> {
+    switch (reservations.get(reservationId)) {
+      case (null) {
+        return #err("Reservation not found");
+      };
+      case (?reservation) {
+        let cancelledReservation: Reservation = {
+          id = reservation.id;
+          restaurantId = reservation.restaurantId;
+          date = reservation.date;
+          time = reservation.time;
+          guests = reservation.guests;
+          status = "Cancelled";
+          specialRequests = reservation.specialRequests;
+        };
+        reservations.put(reservationId, cancelledReservation);
+        return #ok();
+      };
+    };
+  };
+
   public query func checkAvailability(restaurantId: Nat, date: Text, time: Text) : async Bool {
-    // For simplicity, we'll just check if the restaurant exists
-    // In a real application, you'd check against actual availability data
+    // For simplicity, we'll just check if the restaurant exists and if there are less than 5 reservations for that time
     switch (restaurants.get(restaurantId)) {
       case (null) { return false; };
-      case (?_) { return true; };
+      case (?_) {
+        let reservationsForTime = Array.filter<Reservation>(Array.map<(Nat, Reservation), Reservation>(Iter.toArray(reservations.entries()), func((_, r)) = r), func(r) {
+          r.restaurantId == restaurantId and r.date == date and r.time == time and r.status == "Confirmed"
+        });
+        return reservationsForTime.size() < 5;
+      };
     };
   };
 }

@@ -44,7 +44,7 @@ function App() {
             Restaurants
           </Button>
           <Button color="inherit" component={Link} to="/reservations">
-            My Reservations
+            My Bookings
           </Button>
         </Toolbar>
       </AppBar>
@@ -52,7 +52,7 @@ function App() {
         <Routes>
           <Route path="/" element={<RestaurantList restaurants={restaurants} />} />
           <Route path="/book/:id" element={<ReservationForm restaurants={restaurants} onReservationMade={fetchReservations} />} />
-          <Route path="/reservations" element={<ReservationList reservations={reservations} />} />
+          <Route path="/reservations" element={<ReservationList reservations={reservations} onReservationUpdate={fetchReservations} />} />
         </Routes>
       </Container>
     </Router>

@@ -25,17 +25,17 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ restaurants, onReserv
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const result = await backend.makeReservation(BigInt(id!), data.date, data.time, BigInt(data.guests));
+      const result = await backend.makeReservation(BigInt(id!), data.date, data.time, BigInt(data.guests), data.specialRequests || null);
       if ('ok' in result) {
-        alert('Reservation made successfully!');
+        alert('Booking made successfully!');
         onReservationMade();
         navigate('/reservations');
       } else {
-        alert('Failed to make reservation: ' + result.err);
+        alert('Failed to make booking: ' + result.err);
       }
     } catch (error) {
-      console.error('Error making reservation:', error);
-      alert('An error occurred while making the reservation.');
+      console.error('Error making booking:', error);
+      alert('An error occurred while making the booking.');
     } finally {
       setLoading(false);
     }
@@ -103,6 +103,21 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ restaurants, onReserv
           />
         )}
       />
+      <Controller
+        name="specialRequests"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Special Requests"
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+          />
+        )}
+      />
       <Button
         type="submit"
         variant="contained"
@@ -111,7 +126,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ restaurants, onReserv
         sx={{ mt: 2 }}
         disabled={loading}
       >
-        {loading ? <CircularProgress size={24} /> : 'Make Reservation'}
+        {loading ? <CircularProgress size={24} /> : 'Make Booking'}
       </Button>
     </Box>
   );

@@ -1,7 +1,12 @@
-type Result = 
+type Result_1 = 
  variant {
    err: text;
    ok: nat;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
  };
 type Restaurant = 
  record {
@@ -16,11 +21,15 @@ type Reservation =
    guests: nat;
    id: nat;
    restaurantId: nat;
+   specialRequests: opt text;
+   status: text;
    time: text;
  };
 service : {
+  cancelReservation: (nat) -> (Result);
   checkAvailability: (nat, text, text) -> (bool) query;
   getReservations: () -> (vec Reservation) query;
   getRestaurants: () -> (vec Restaurant) query;
-  makeReservation: (nat, text, text, nat) -> (Result);
+  makeReservation: (nat, text, text, nat, opt text) -> (Result_1);
+  updateReservation: (nat, text, text, nat, opt text) -> (Result);
 }
